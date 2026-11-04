@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Perfiles</title>
+  <style>
+    :root {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: #1f2937;
+      background: #f3f4f6;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      position: relative;
+      margin: 0;
+      min-height: 100vh;
+    }
+
+    body::after {
+      content: "Made by Aer0hh";
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      font-size: 1.1rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      color: #123a5b;
+      opacity: 0.12;
+      pointer-events: none;
+      transform: rotate(-12deg);
+      user-select: none;
+      z-index: 0;
+    }
+
+    header {
+      padding: 2rem 1rem;
+      color: white;
+      text-align: center;
+      background: #123a5b;
+      position: relative;
+      z-index: 1;
+    }
+
+    header h1 {
+      margin: 0 0 0.5rem;
+    }
+
+    header p {
+      margin: 0;
+      color: #dfeaf5;
+    }
+
+    main {
+      width: min(100% - 2rem, 700px);
+      margin: 2rem auto;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 2rem;
+      align-items: start;
+      position: relative;
+      z-index: 1;
+    }
+
+    .panel {
+      padding: 1.5rem;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 14px #0000000d;
+    }
+
+    h2 {
+      margin-top: 0;
+      text-align: center;
+    }
+
+    label {
+      display: block;
+      margin: 1rem 0 0.35rem;
+      font-weight: 600;
+    }
+
+    input,
+    textarea {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      font: inherit;
+    }
+
+    textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+
+    input:focus,
+    textarea:focus {
+      outline: 2px solid #123a5b;
+      border-color: #123a5b;
+    }
+
+    button {
+      width: 100%;
+      margin-top: 1.25rem;
+      padding: 0.8rem 1rem;
+      color: white;
+      background: #123a5b;
+      border: 0;
+      border-radius: 8px;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    button:hover {
+      background: #0d2d47;
+    }
+
+    .profiles {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1rem;
+      justify-content: center;
+    }
+
+    .profile-card {
+      padding: 1.25rem;
+      text-align: center;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 14px #0000000d;
+      overflow-wrap: anywhere;
+    }
+
+    .avatar {
+      width: 88px;
+      height: 88px;
+      margin: 0 auto 0.75rem;
+      display: grid;
+      place-items: center;
+      color: white;
+      background: #123a5b;
+      border-radius: 50%;
+      font-size: 1.8rem;
+      font-weight: 700;
+      object-fit: cover;
+    }
+
+    .profile-card h3 {
+      margin: 0.5rem 0 0.25rem;
+    }
+
+    .email {
+      color: #123a5b;
+      font-size: 0.9rem;
+    }
+
+    .bio {
+      color: #4b5563;
+      line-height: 1.5;
+      white-space: pre-wrap;
+    }
+
+    .empty-message {
+      color: #6b7280;
+      text-align: center;
+    }
+
+    @media (max-width: 700px) {
+      main {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Perfiles</h1>
+    <p>Crea y comparte tu perfil</p>
+  </header>
+
+  <main>
+    <section class="panel" aria-labelledby="form-title">
+      <h2 id="form-title">Crear perfil</h2>
+
+      <form id="profile-form">
+        <label for="name">Nombre</label>
+        <input id="name" name="name" type="text" maxlength="60" required>
+
+        <label for="email">Correo electrónico</label>
+        <input id="email" name="email" type="email" maxlength="120" required>
+
+        <label for="bio">Biografía</label>
+        <textarea id="bio" name="bio" maxlength="300" placeholder="Cuéntanos un poco sobre ti"></textarea>
+
+        <label for="photo">URL de la foto (opcional)</label>
+        <input id="photo" name="photo" type="url" placeholder="https://ejemplo.com/foto.jpg">
+
+        <button type="submit">Crear perfil</button>
+      </form>
+    </section>
+
+    <section aria-labelledby="profiles-title">
+      <h2 id="profiles-title">Perfiles creados</h2>
+      <div id="profiles" class="profiles" aria-live="polite"></div>
+    </section>
+  </main>
+
+  <script>
+    const form = document.querySelector("#profile-form");
+    const profilesContainer = document.querySelector("#profiles");
+
+    let profiles = JSON.parse(localStorage.getItem("perfiles") || "[]");
+
+    function renderProfiles() {
+      profilesContainer.replaceChildren();
+
+      if (profiles.length === 0) {
+        const message = document.createElement("p");
+        message.className = "empty-message";
+        message.textContent = "Todavía no hay perfiles. ¡Crea el primero!";
+        profilesContainer.append(message);
+        return;
+      }
+
+      profiles.forEach((profile) => {
+        const card = document.createElement("article");
+        card.className = "profile-card";
+
+        if (profile.photo) {
+          const image = document.createElement("img");
+          image.className = "avatar";
+          image.src = profile.photo;
+          image.alt = `Foto de ${profile.name}`;
+          image.onerror = () => {
+            const initials = document.createElement("div");
+            initials.className = "avatar";
+            initials.setAttribute("aria-label", `Iniciales de ${profile.name}`);
+            initials.textContent = profile.name.charAt(0).toUpperCase();
+            image.replaceWith(initials);
+          };
+          card.append(image);
+        } else {
+          const initials = document.createElement("div");
+          initials.className = "avatar";
+          initials.setAttribute("aria-label", `Iniciales de ${profile.name}`);
+          initials.textContent = profile.name.charAt(0).toUpperCase();
+          card.append(initials);
+        }
+
+        const name = document.createElement("h3");
+        name.textContent = profile.name;
+
+        const email = document.createElement("p");
+        email.className = "email";
+        email.textContent = profile.email;
+
+        const bio = document.createElement("p");
+        bio.className = "bio";
+        bio.textContent = profile.bio || "Sin biografía.";
+
+        card.append(name, email, bio);
+        profilesContainer.append(card);
+      });
+    }
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+
+      const formData = new FormData(form);
+      const profile = {
+        name: formData.get("name").trim(),
+        email: formData.get("email").trim(),
+        bio: formData.get("bio").trim(),
+        photo: formData.get("photo").trim()
+      };
+
+      profiles.unshift(profile);
+      localStorage.setItem("perfiles", JSON.stringify(profiles));
+      renderProfiles();
+      form.reset();
+      document.querySelector("#name").focus();
+    });
+
+    renderProfiles();
+  </script>
+</body>
+</html>
